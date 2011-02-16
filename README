@@ -1,0 +1,15 @@
+Steps to "install":
+
+1. Set up Google Doc spreadsheet per example (https://spreadsheets.google.com/ccc?key=0Aj0N0gYQIIlbdG9Id2VOdnBpWGFlYkU2eXFER1RKX3c&hl=en&authkey=CMvZ-aAG), make non-private
+
+2. Take the key from the public URL and put it into the URL structure below. The "sheet" value is likely "od6"
+
+Example spreadsheet: https://spreadsheets.google.com/ccc?key=0Aj0N0gYQIIlbdG9Id2VOdnBpWGFlYkU2eXFER1RKX3c&hl=en&authkey=CMvZ-aAG
+
+Becomes: https://spreadsheets.google.com/tq?key=0Aj0N0gYQIIlbdG9Id2VOdnBpWGFlYkU2eXFER1RKX3c&sheet=0d6
+
+Alternatively, you can find this information while authorized at Google by going to https://spreadsheets.google.com/feeds/spreadsheets/private/full
+
+<link rel='alternate' type='text/html' href='https://spreadsheets.google.com/ccc?key=0Aj0N0gYQIIlbdG9Id2VOdnBpWGFlYkU2eXFER1RKX3c'/>
+
+3. Update the <script> include in the footer with the new key and sheet values. Load in browser.
