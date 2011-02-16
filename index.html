@@ -1,0 +1,533 @@
+d>
+<script type="text/javascript">
+/*  Poor man's project management
+	See: https://spreadsheets7.google.com/ccc?hl=en&key=tWDuhr5oP5pmjkrvtJAl_SA&hl=en#gid=0
+ */
+
+var google = {};
+google.visualization = {};
+google.visualization.Query = {};
+var commit_list = {};
+var commit_list_old = {};
+commit_list.projects = [];
+commit_list.files = [];
+var return_data = {};
+return_data.projects = {};
+return_data.files = {};
+return_data.blocks = {};
+return_data.blocks.blocked = {};
+return_data.blocks.blocking = {};
+return_data.people = {};
+return_data.status = {};
+google.visualization.Query.setResponse = function(payload) {
+    if (payload.status == "ok") {
+        payload.table.rows = payload.table.rows.slice(1);
+        jQuery.each(payload.table.rows, function(row_key, row) {
+            jQuery.each(row, function(row_key2, row2) {
+                if (row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "") == "") {
+                    row2[0].v = "unknown";
+                }
+                if (row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "") == "") {
+                    row2[1].v = "unknown";
+                }
+                if (row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "") == "") {
+                    row2[2].v = "unknown";
+                }
+                if (row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "") == "") {
+                    row2[3].v = "unknown";
+                }
+                if (row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "") == "") {
+                    row2[4].v = "unknown";
+                }
+                if (row2[5].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "") == "") {
+                    row2[5].v = "unknown";
+                }
+                //dont fill in default for blocks field (#6)
+                if (typeof return_data.projects[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] == "undefined") {
+                    return_data.projects[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = {};
+                }
+                if (typeof return_data.projects[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['status'] == "undefined") {
+                    return_data.projects[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['status'] = {};
+                }
+                return_data.projects[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['name'] = row2[1].v;
+                if (typeof return_data.projects[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['status'][row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] == "undefined") {
+                    return_data.projects[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['status'][row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = [];
+                }
+                return_data.projects[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['status'][row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")].push(row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, ""));
+                if (typeof return_data.projects[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['files'] == "undefined") {
+                    return_data.projects[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['files'] = [];
+                }
+                return_data.projects[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['files'].push(row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, ""));
+                if (typeof return_data.files[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] == "undefined") {
+                    return_data.files[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = {};
+                }
+                return_data.files[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]["path"] = row2[0].v;
+                return_data.files[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]["project_id"] = row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "");
+                return_data.files[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]["owner_id"] = row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "");
+                return_data.files[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]["reviewer_id"] = row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "");
+                return_data.files[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]["status_id"] = row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "");
+                return_data.files[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]["comment"] = row2[5].v;
+                if (typeof return_data.people[row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] == "undefined") {
+                    return_data.people[row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = {};
+                    return_data.people[row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['name'] = row2[3].v;
+                }
+                if (typeof return_data.people[row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] == "undefined") {
+                    return_data.people[row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = {};
+                    return_data.people[row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['name'] = row2[2].v;
+                }
+                if (typeof return_data.people[row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['written'] == "undefined") {
+                    return_data.people[row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['written'] = {};
+                }
+                if (typeof return_data.people[row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['reviewed'] == "undefined") {
+                    return_data.people[row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['reviewed'] = {};
+                }
+                if (typeof return_data.people[row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['written'] == "undefined") {
+                    return_data.people[row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['written'] = {};
+                }
+                if (typeof return_data.people[row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['reviewed'] == "undefined") {
+                    return_data.people[row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['reviewed'] = {};
+                }
+                if (typeof return_data.people[row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['written'][row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] == "undefined") {
+                    return_data.people[row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['written'][row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = [];
+                }
+                return_data.people[row2[2].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['written'][row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")].push(row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, ""));
+                if (typeof return_data.people[row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['reviewed'][row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] == "undefined") {
+                    return_data.people[row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['reviewed'][row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = [];
+                }
+                return_data.people[row2[3].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['reviewed'][row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")].push(row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, ""));
+                if (typeof return_data.status[row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] == "undefined") {
+                    return_data.status[row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = {};
+                }
+                if (typeof return_data.status[row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['pending'] == "undefined") {
+                    return_data.status[row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['pending'] = [];
+                }
+                return_data.status[row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['pending'].push(row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, ""));
+                if (typeof return_data.status[row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['name'] == "undefined") {
+                    return_data.status[row2[4].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['name'] = row2[4].v;
+                }
+                if (typeof return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] == "undefined") {
+                    return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = {};
+                }
+                if (typeof return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] == "undefined") {
+                    return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = {};
+                }
+                if (typeof return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] == "undefined") {
+                    return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = {};
+                }
+                if (typeof return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked'] == "undefined") {
+                    return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked'] = {};
+                }
+                if (typeof return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked'] == "undefined") {
+                    return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked'] = {};
+                }
+                if (typeof return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked'] == "undefined") {
+                    return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked'] = {};
+                }
+                if (typeof return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking'] == "undefined") {
+                    return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking'] = {};
+                }
+                if (typeof return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking'] == "undefined") {
+                    return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking'] = {};
+                }
+                if (typeof return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking'] == "undefined") {
+                    return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking'] = {};
+                }
+                if (typeof return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['files'] == "undefined") {
+                    return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['files'] = [];
+                }
+                if (typeof return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['files'] == "undefined") {
+                    return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['files'] = [];
+                }
+                if (typeof return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['files'] == "undefined") {
+                    return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['files'] = [];
+                }
+                if (typeof return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['projects'] == "undefined") {
+                    return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['projects'] = {};
+                }
+                if (typeof return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['projects'] == "undefined") {
+                    return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['projects'] = {};
+                }
+                if (typeof return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['projects'] == "undefined") {
+                    return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocked']['projects'] = {};
+                }
+                if (typeof return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['files'] == "undefined") {
+                    return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['files'] = [];
+                }
+                if (typeof return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['files'] == "undefined") {
+                    return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['files'] = [];
+                }
+                if (typeof return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['files'] == "undefined") {
+                    return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['files'] = [];
+                }
+                if (typeof return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['projects'] == "undefined") {
+                    return_data.blocks[row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['projects'] = {};
+                }
+                if (typeof return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['projects'] == "undefined") {
+                    return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['projects'] = {};
+                }
+                if (typeof return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['projects'] == "undefined") {
+                    return_data.blocks[row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['projects'] = {};
+                }
+                if (row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "") != '' && row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "") != '') {
+                    //return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g,"")]['blocking']['files'].push(row2[0].v.toLowerCase().replace(/[^a-zA-Z1-9]/g,""));
+                    return_data.blocks[row2[6].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")]['blocking']['projects'][row2[1].v.toLowerCase().replace(/[^a-zA-Z1-9]/g, "")] = 1;
+                }
+            });
+        });
+        } else {
+        alert('error fetching spreadsheet');
+    }
+    var view_type = '';
+    function switch_mode(new_mode) {
+        view_type = new_mode;
+        if (new_mode == "status") {
+            //jQuery("#finder").append("<h3>Statuses</h3><ul id='results_1'></ul>");
+            jQuery.each(return_data.status, function(status_id, status_object) {
+                jQuery("#finder").append("<li><a href='#'  class='get_status' id='" + status_id + "'>" + status_object.name + "</a> (" + status_object.pending.length + ")" + "</li>");
+            });
+            } else if (new_mode == "people") {
+            //jQuery("#finder").append("<h3>People</h3><ul id='results_2'></ul>");
+            jQuery.each(return_data.people, function(person_id, person_object) {
+                jQuery("#finder").append("<li><a href='#'  class='get_person' id='" + person_id + "'>" + person_id + "</a>" + "</li>");
+            });
+            } else if (new_mode == "projects") {
+            //jQuery("#finder").append("<h3>Projects</h3><ul id='results_3'></ul>");
+            jQuery.each(return_data.projects, function(item_id, item_object) {
+                jQuery("#finder").append("<li><a href='#'  class='get_project' id='" + item_id + "'>" + item_id + "</a>" + "</li>");
+            });
+        }
+    }
+    jQuery(document).ready(function() {
+        jQuery('.get_status').live('click', function() {
+            event.preventDefault();
+            if (view_type == "status") {
+                var target_ul = jQuery("result ul:first-child");
+                } else {
+                var target_ul = jQuery(this).parent().parent().next();
+            }
+            if (target_ul.length > 0 && typeof target_ul.attr('src')) {
+                remove_all_next_nodes(jQuery(target_ul));
+            }
+            jQuery(this).parent().parent().parent().append("<ul class='new'></ul>");
+            jQuery(".new").attr('style', jQuery(this).parent().parent().attr('style'));
+            target_ul = jQuery(".new").removeClass('new');
+            jQuery.each(return_data.status[jQuery(this).attr('id')].pending, function(file_key, file_id) {
+                jQuery("<li><a href='#' class='get_file' id='" + file_id + "'>" + file_id + "</li>").hide().appendTo(target_ul).fadeIn();
+            });
+        });
+        jQuery('.get_file').live('click', function() {
+            event.preventDefault();
+            var target_ul = jQuery(this).parent().parent().next();
+            if (target_ul.length > 0 && typeof target_ul.attr('src')) {
+                remove_all_next_nodes(jQuery(target_ul));
+            }
+            jQuery(this).parent().parent().parent().append("<ul class='new'></ul>");
+            jQuery(".new").attr('style', jQuery(this).parent().parent().attr('style'));
+            target_ul = jQuery(".new").removeClass('new');
+            jQuery.each(return_data.files[jQuery(this).attr('id')], function(file_item_key, file_item_value) {
+                if (file_item_key == "reviewer_id" || file_item_key == "owner_id") {
+                    jQuery("<li>" + file_item_key + ": <a href='#' class='get_person' id='" + file_item_value + "'>" + file_item_value + "</a></li>").hide().appendTo(target_ul).fadeIn();
+                    } else if (file_item_key == "project_id") {
+                    jQuery("<li>" + file_item_key + ": <a href='#' class='get_project' id='" + file_item_value + "'>" + file_item_value + "</a></li>").hide().appendTo(target_ul).fadeIn();
+                    } else if (file_item_key == "status_id") {
+                    jQuery("<li>" + file_item_key + ": <a href='#' class='get_status' id='" + file_item_value + "'>" + file_item_value + "</li>").hide().appendTo(target_ul).fadeIn();
+                    } else {
+                    jQuery("<li>" + file_item_key + ": " + file_item_value + "</li>").hide().appendTo(target_ul).fadeIn();
+                }
+            });
+        });
+        jQuery('.get_project').live('click', function() {
+            event.preventDefault();
+            var target_ul = jQuery(this).parent().parent().next();
+            if (target_ul.length > 0 && typeof target_ul.attr('src')) {
+                remove_all_next_nodes(jQuery(target_ul));
+            }
+            jQuery(this).parent().parent().parent().append("<ul class='new'></ul>");
+            jQuery(".new").attr('style', jQuery(this).parent().parent().attr('style'));
+            target_ul = jQuery(".new").removeClass('new');
+            jQuery.each(return_data.projects[jQuery(this).attr('id')].status, function(item_key, item_value) {
+                jQuery.each(item_value, function(item_subkey, item_subvalue) {
+                    jQuery("<li><a href='#' class='get_file' id='" + item_subvalue + "'>" + item_subvalue + "</a></li>").hide().appendTo(target_ul).fadeIn();
+                });
+            });
+        });
+        jQuery('.get_person').live('click', function() {
+            event.preventDefault();
+            var person_slug = jQuery(this).attr('id');
+            var target_ul = jQuery(this).parent().parent().next();
+            if (target_ul.length > 0 && typeof target_ul.attr('src')) {
+                remove_all_next_nodes(jQuery(target_ul));
+            }
+            jQuery(this).parent().parent().parent().append("<ul class='new'></ul>");
+            jQuery(".new").attr('style', jQuery(this).parent().parent().attr('style'));
+            target_ul = jQuery(".new").removeClass('new');
+            jQuery.each(return_data.people[jQuery(this).attr('id')], function(item_key, item_value) {
+                if (typeof item_value == "object") {
+                    var item_value_count = 0;
+                    jQuery.each(item_value, function(item_value_key, item_value_object) {
+                        item_value_count = item_value_count + item_value_object.length;
+                    });
+                    jQuery("<li><a href='#' class='get_person_status' id='" + person_slug + "_" + item_key + "'>" + item_key + "</a> (" + item_value_count + ")</li>").hide().appendTo(target_ul).fadeIn();
+                    } else {
+                    jQuery("<li>" + item_key + ": " + item_value + "</li>").hide().appendTo(target_ul).fadeIn();
+                }
+            });
+        });
+        jQuery('.get_person_status').live('click', function() {
+            event.preventDefault();
+            var target_ul = jQuery(this).parent().parent().next();
+            if (target_ul.length > 0 && typeof target_ul.attr('src')) {
+                remove_all_next_nodes(jQuery(target_ul));
+            }
+            jQuery(this).parent().parent().parent().append("<ul class='new'></ul>");
+            jQuery(".new").attr('style', jQuery(this).parent().parent().attr('style'));
+            target_ul = jQuery(".new").removeClass('new');
+            var split = jQuery(this).attr('id').split("_");
+            var name = split[0];
+            var status = split[1];
+            jQuery.each(return_data.people[name][status], function(pending_key, pending_value) {
+                jQuery("<li><a href='#' class='get_person_type' id='" + name + "_" + status + "_" + pending_key + "'>" + pending_key + "</a>" + " (" + pending_value.length + ")" + "</li>").hide().appendTo(target_ul).fadeIn();
+            });
+        });
+        jQuery('.get_person_type').live('click', function() {
+            event.preventDefault();
+            var target_ul = jQuery(this).parent().parent().next();
+            if (target_ul.length > 0 && typeof target_ul.attr('src')) {
+                remove_all_next_nodes(jQuery(target_ul));
+            }
+            jQuery(this).parent().parent().parent().append("<ul class='new'></ul>");
+            jQuery(".new").attr('style', jQuery(this).parent().parent().attr('style'));
+            target_ul = jQuery(".new").removeClass('new');
+            var split = jQuery(this).attr('id').split("_");
+            var name = split[0];
+            var status = split[1];
+            var type = split[2];
+            console.log(name, status, type);
+            jQuery.each(return_data.people[name][status][type], function(pending_key, pending_value) {
+                jQuery("<li><a href='#' class='get_file' id='" + pending_value + "'>" + pending_value + "</a></li>").hide().appendTo(target_ul).fadeIn();
+            });
+        });
+        jQuery('.get_project_status').live('click', function() {
+            event.preventDefault();
+            var target_ul = jQuery(this).parent().parent().next();
+            if (target_ul.length > 0 && typeof target_ul.attr('src')) {
+                remove_all_next_nodes(jQuery(target_ul));
+            }
+            jQuery(this).parent().parent().parent().append("<ul class='new'></ul>");
+            jQuery(".new").attr('style', jQuery(this).parent().parent().attr('style'));
+            target_ul = jQuery(".new").removeClass('new');
+            var split = jQuery(this).attr('id').split("_");
+            var name = split[0];
+            var status = split[1];
+            jQuery.each(return_data.projects[name][status], function(pending_key, pending_value) {
+                jQuery("<li><a href='#' class='get_project_type' id='" + name + "_" + status + "_" + pending_key + "'>" + pending_key + "</a>" + " (" + pending_value.length + ")" + "</li>").hide().appendTo(target_ul).fadeIn();
+            });
+        });
+        jQuery('.get_project_type').live('click', function() {
+            event.preventDefault();
+            var target_ul = jQuery(this).parent().parent().next();
+            if (target_ul.length > 0 && typeof target_ul.attr('src')) {
+                remove_all_next_nodes(jQuery(target_ul));
+            }
+            jQuery(this).parent().parent().parent().append("<ul class='new'></ul>");
+            jQuery(".new").attr('style', jQuery(this).parent().parent().attr('style'));
+            target_ul = jQuery(".new").removeClass('new');
+            var split = jQuery(this).attr('id').split("_");
+            var name = split[0];
+            var status = split[1];
+            var type = split[2];
+            console.log(name, status, type);
+            jQuery.each(return_data.projects[name][status][type], function(pending_key, pending_value) {
+                jQuery("<li><a href='#' class='get_file' id='" + pending_value + "'>" + pending_value + "</a></li>").hide().appendTo(target_ul).fadeIn();
+            });
+        });
+        jQuery('.get_project_commit_commands').live('click', function() {
+            event.preventDefault();
+            var target_ul = jQuery(this).parent().parent().next();
+            if (target_ul.length > 0 && typeof target_ul.attr('src')) {
+                remove_all_next_nodes(jQuery(target_ul));
+            }
+            jQuery(this).parent().parent().parent().append("<ul class='new'></ul>");
+            jQuery(".new").attr('style', jQuery(this).parent().parent().attr('style'));
+            target_ul = jQuery(".new").removeClass('new');
+
+            jQuery.each(return_data.files[jQuery(this).attr('id')], function(pending_key, file_id) {
+            console.log("COMMOT",file_id);
+            jQuery("#commit_steps").append("<li>svn commit " + return_data.files[file_id].path + ' -m "' + addslashes(return_data.people[return_data.files[file_id].owner_id].name) + ': ' + addslashes(return_data.files[file_id].comment) + '"</li>');
+            });
+        });
+        organize_commit(return_data);
+        switch_mode("projects");
+    });
+};
+function organize_commit(data_to_use) {
+    var state_object = {};
+    //copy array of projects into empty array with false for each
+    jQuery.each(data_to_use.projects, function(item_key, item_value) {
+        if (typeof return_data.projects[item_key].status.pendingcommit != "undefined" && return_data.projects[item_key].status.pendingcommit.length > 0) {
+            state_object[item_key] = true;
+        }
+    });
+    //
+    var unadded_item_count = 0;
+    jQuery.each(state_object, function(item_key, item_value) {
+        if (state_object[item_key] == true) {
+            unadded_item_count++;
+        }
+    });
+    //foreach project
+    jQuery.each(state_object, function(project_id_thats_blocking, item_value) {
+        //console.log("level 1",project_id_thats_blocking,item_value);
+        //spin through the projects it's blocking (if any)
+        jQuery.each(data_to_use.blocks[project_id_thats_blocking].blocking.projects, function(project_id_thats_being_blocked, project_key) {
+            //console.log("level 2",project_id_thats_being_blocked,project_key);
+            //for each project that's being blocked, sping through its files
+            jQuery.each(data_to_use.projects[project_id_thats_being_blocked].files, function(blocked_file_key, blocked_file_id) {
+                //console.log("level 3",blocked_file_key,blocked_file_id);
+                //mark each file as being blocked by each file in the project
+                jQuery.each(data_to_use.projects[project_id_thats_blocking].files, function(blocking_file_key, blocking_file_id) {
+                    //console.log("level 4",blocking_file_key,blocking_file_id);
+                    //file_id
+                    console.log(blocked_file_id + " is blocked by " + blocking_file_id);
+                    //the blocked file is blocked by the blocking file
+                    data_to_use.blocks[blocked_file_id].blocked.files.push(blocking_file_id);
+                    //the blocked project is blocked by the blocking file
+                    data_to_use.blocks[project_id_thats_being_blocked].blocked.files.push(blocking_file_id);
+                    //the project that's blocking is blocking the blocked file
+                    data_to_use.blocks[project_id_thats_blocking].blocking.files.push(blocked_file_key);
+                    //the project that's blocking is blocking the project id thats being blocked
+                    data_to_use.blocks[project_id_thats_blocking].blocking.projects[project_id_thats_being_blocked] = 1;
+                    //the blocking file is blocking the project thats being blocked
+                    data_to_use.blocks[blocking_file_id].blocking.projects[project_id_thats_being_blocked] = 1;
+                    //the blocked file is blocked by the blocking project
+                    data_to_use.blocks[blocked_file_id].blocked.projects[project_id_thats_blocking] = 1;
+                    //the blocking file is blocking the blocked file
+                    data_to_use.blocks[blocking_file_id].blocking.files.push(blocked_file_id);
+                });
+            });
+        });
+        //
+    });
+    while (unadded_item_count > 0) {
+        // spin through projects, for each
+        jQuery.each(state_object, function(project_id, item_value) {
+            // ->  if project blocked by a file not yet on commit list (array item as false),
+            console.log("x", project_id, data_to_use.blocks[project_id].blocking.files.length, (data_to_use.blocks[project_id].blocking.files.length > 0));
+            var new_item_flag = true;
+            //check if blocked by project
+            if ((data_to_use.blocks[project_id].blocked.files.length > 0)) {
+                //Project is blocked, so we need to figure out if the items that are blocking it are already in the queue
+                var all_files_are_in_queue = true;
+                //For each file in the project that is being blocked
+                jQuery.each(data_to_use.projects[project_id].files, function(file_key, blocked_file_id) {
+                    console.log("PROJECT " + project_id + " IS BEING BLOCKED by" + blocked_file_id);
+                    //Check what files are blocking it
+                    console.log("Check what projects are blocking it", data_to_use.blocks[blocked_file_id].blocked.files);
+                    jQuery.each(data_to_use.blocks[blocked_file_id].blocked.files, function(file_key, blocking_file_id) {
+                        //Check if by chance all of those files in said project are already commited
+                        var file_is_in_queue = false;
+                        jQuery.each(commit_list.files, function(commit_file_key, commit_file_id) {
+                            //console.log("getting",commit_file_id, file_id,commit_file_id == file_id);
+                            if (commit_file_id == blocked_file_id) {
+                                new_item_flag = false;
+                            }
+                            if (commit_file_id == blocking_file_id) {
+                                file_is_in_queue = true;
+                            }
+                        });
+                        if (!file_is_in_queue) {
+                            all_files_are_in_queue = false;
+                        }
+                    });
+                    console.log("PENDING####", return_data.files[blocked_file_id].path, return_data.files[blocked_file_id].status);
+                    if (all_files_are_in_queue && return_data.files[blocked_file_id].status_id == "pendingcommit") {
+                        if (new_item_flag) {
+                            commit_list.files.push(blocked_file_id);
+                        }
+                        new_item_flag = true;
+                        jQuery.each(commit_list.projects, function(commit_project_key, commit_project_id) {
+                            if (commit_project_id == project_id) {
+                                new_item_flag = false;
+                            }
+                        });
+                        if (new_item_flag) {
+                            commit_list.projects.push(project_id);
+                        }
+                        state_object[project_id] = false;
+                    }
+                });
+                } else {
+                //Project is not blocked, so let's add each item in that project
+                //to the commit queue
+                console.log("NOT BLOCKED", project_id);
+                var new_proj_flag = true;
+                jQuery.each(commit_list.projects, function(commit_project_key, commit_project_id) {
+                    if (commit_project_id == project_id) {
+                        new_proj_flag = false;
+                    }
+                });
+                if (new_proj_flag) {
+                    commit_list.projects.push(project_id);
+                    jQuery.each(data_to_use.projects[project_id].files, function(file_key, file_id) {
+                        new_item_flag = true;
+                        jQuery.each(commit_list.files, function(commit_file_key, commit_file_id) {
+                            if (commit_file_id == file_id) {
+                                new_item_flag = false;
+                            }
+                        });
+                        if (new_item_flag && return_data.files[file_id].status !== "pendingcommit") {
+                            commit_list.files.push(file_id);
+                        }
+                    });
+                }
+                state_object[project_id] = false;
+            }
+        });
+        if (commit_list == commit_list_old) {
+            unadded_item_count = 0;
+            } else {
+            unadded_item_count = unadded_item_count + 1;
+            commit_list_old = commit_list;
+        }
+    }
+}
+function build_commit_commands() {
+    jQuery("#commands").append("<ul style='float:left;position:relative;list-style-type:decimal;margin:0;padding:0 0 5px 0;' id='commit_order'></ul><ul style='list-style-type:none;margin:0;padding:0 0 5px 0;max-width:600px;overflow:spill;float:left;position:relative;' id='commit_steps'></ul>");
+    jQuery.each(commit_list.projects, function(key, project_id) {
+        jQuery("#commit_order").append("<li><a href='#' class='get_project_commit_commands' id='" + project_id + "'>" + return_data.projects[project_id].name + "</a></li>");
+        jQuery.each(return_data.projects[project_id].files, function(key, file_id) {
+            console.log(return_data.files[file_id]);
+            jQuery("#commit_steps").append("<li>svn commit " + return_data.files[file_id].path + ' -m "' + addslashes(return_data.people[return_data.files[file_id].owner_id].name) + ': ' + addslashes(return_data.files[file_id].comment) + '"</li>');
+        });
+    });
+}
+function remove_all_next_nodes(element_to_check) {
+    if (jQuery(element_to_check).next().length > 0) {
+        remove_all_next_nodes(jQuery(element_to_check).next());
+        jQuery(element_to_check).remove();
+        } else {
+        jQuery(element_to_check).remove();
+    }
+}
+function addslashes(str) {
+    str = str.replace(/\\/g, '\\\\');
+    str = str.replace(/\'/g, '\\\'');
+    str = str.replace(/\"/g, '\\"');
+    str = str.replace(/\0/g, '\\0');
+    return str;
+}
+</script>
+</head>
+<body>
+<div id="results" style="width:1250px">
+<ul id="finder" style="overflow:hidden;list-style-type:none;padding:0;position:relative;float:left;margin:0 20px 0 0px;min-width:100px;max-width:250px;">
+</ul>
+</div>
+<div id="commands" style="width:1250px">
+</div>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.0/jquery.min.js">
+</script>
+<script src="https://spreadsheets.google.com/tq?key={your key}&sheet={your sheet e.g. od6}">
+</script>
+</body>
+</html>
