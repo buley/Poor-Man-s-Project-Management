@@ -180,6 +180,9 @@ google.visualization.Query.setResponse = function(payload) {
     var view_type = '';
     function switch_mode(new_mode) {
         view_type = new_mode;
+	jQuery("#commands").html('');
+        jQuery("#finder").html('');
+
         if (new_mode == "status") {
             //jQuery("#finder").append("<h3>Statuses</h3><ul id='results_1'></ul>");
             jQuery.each(return_data.status, function(status_id, status_object) {
@@ -377,18 +380,12 @@ function organize_commit(data_to_use) {
     });
     //foreach project
     jQuery.each(state_object, function(project_id_thats_blocking, item_value) {
-        //console.log("level 1",project_id_thats_blocking,item_value);
         //spin through the projects it's blocking (if any)
         jQuery.each(data_to_use.blocks[project_id_thats_blocking].blocking.projects, function(project_id_thats_being_blocked, project_key) {
-            //console.log("level 2",project_id_thats_being_blocked,project_key);
             //for each project that's being blocked, sping through its files
             jQuery.each(data_to_use.projects[project_id_thats_being_blocked].files, function(blocked_file_key, blocked_file_id) {
-                //console.log("level 3",blocked_file_key,blocked_file_id);
                 //mark each file as being blocked by each file in the project
                 jQuery.each(data_to_use.projects[project_id_thats_blocking].files, function(blocking_file_key, blocking_file_id) {
-                    //console.log("level 4",blocking_file_key,blocking_file_id);
-                    //file_id
-                    console.log(blocked_file_id + " is blocked by " + blocking_file_id);
                     //the blocked file is blocked by the blocking file
                     data_to_use.blocks[blocked_file_id].blocked.files.push(blocking_file_id);
                     //the blocked project is blocked by the blocking file
@@ -409,25 +406,19 @@ function organize_commit(data_to_use) {
         //
     });
     while (unadded_item_count > 0) {
-        // spin through projects, for each
         jQuery.each(state_object, function(project_id, item_value) {
-            // ->  if project blocked by a file not yet on commit list (array item as false),
-            console.log("x", project_id, data_to_use.blocks[project_id].blocking.files.length, (data_to_use.blocks[project_id].blocking.files.length > 0));
             var new_item_flag = true;
-            //check if blocked by project
             if ((data_to_use.blocks[project_id].blocked.files.length > 0)) {
+            //check if blocked by project
                 //Project is blocked, so we need to figure out if the items that are blocking it are already in the queue
                 var all_files_are_in_queue = true;
                 //For each file in the project that is being blocked
                 jQuery.each(data_to_use.projects[project_id].files, function(file_key, blocked_file_id) {
-                    console.log("PROJECT " + project_id + " IS BEING BLOCKED by" + blocked_file_id);
                     //Check what files are blocking it
-                    console.log("Check what projects are blocking it", data_to_use.blocks[blocked_file_id].blocked.files);
                     jQuery.each(data_to_use.blocks[blocked_file_id].blocked.files, function(file_key, blocking_file_id) {
                         //Check if by chance all of those files in said project are already commited
                         var file_is_in_queue = false;
                         jQuery.each(commit_list.files, function(commit_file_key, commit_file_id) {
-                            //console.log("getting",commit_file_id, file_id,commit_file_id == file_id);
                             if (commit_file_id == blocked_file_id) {
                                 new_item_flag = false;
                             }
@@ -439,7 +430,6 @@ function organize_commit(data_to_use) {
                             all_files_are_in_queue = false;
                         }
                     });
-                    console.log("PENDING####", return_data.files[blocked_file_id].path, return_data.files[blocked_file_id].status);
                     if (all_files_are_in_queue && return_data.files[blocked_file_id].status_id == "pendingcommit") {
                         if (new_item_flag) {
                             commit_list.files.push(blocked_file_id);
@@ -492,6 +482,9 @@ function organize_commit(data_to_use) {
     }
 }
 function build_commit_commands() {
+    jQuery("#commands").html('');
+    jQuery("#finder").html('');
+
     jQuery("#commands").append("<ul style='float:left;position:relative;list-style-type:decimal;margin:0;padding:0 0 5px 0;' id='commit_order'></ul><ul style='list-style-type:none;margin:0;padding:0 0 5px 0;max-width:600px;overflow:spill;float:left;position:relative;' id='commit_steps'></ul>");
     jQuery.each(commit_list.projects, function(key, project_id) {
         jQuery("#commit_order").append("<li><a href='#' class='get_project_commit_commands' id='" + project_id + "'>" + return_data.projects[project_id].name + "</a></li>");
